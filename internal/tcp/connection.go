@@ -1,4 +1,4 @@
-// this one is responsible for creating tcp connections
+// Package tcp: this one is responsible for creating tcp connections
 package tcp
 
 import (

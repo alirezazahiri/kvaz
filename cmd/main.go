@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"kvaz/internal/handler"
+	"kvaz/internal/parser"
 	"kvaz/internal/tcp"
+	"kvaz/internal/tokenizer"
 )
 
 func main() {
@@ -17,6 +19,15 @@ func main() {
 		}
 
 		ch := handler.NewConnectionHandler(tc)
-		go ch.Connect()
+		t := tokenizer.New()
+		p := parser.New()
+		go ch.Connect(func(b []byte) {
+			v, err := p.Parse(t.SplitFirstToken(b))
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			v.Execute()
+		})
 	}
 }
