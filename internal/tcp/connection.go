@@ -1,7 +1,10 @@
 // this one is responsible for creating tcp connections
 package tcp
 
-import "net"
+import (
+	"fmt"
+	"net"
+)
 
 type TCPConnection struct {
 	connection net.Conn
@@ -23,4 +26,11 @@ func (tc *TCPConnection) Write(b []byte) (int, error) {
 
 func (tc *TCPConnection) Close() error {
 	return tc.connection.Close()
+}
+
+func (tc *TCPConnection) CloseWrite() error {
+	if tcpConn, ok := tc.connection.(*net.TCPConn); ok {
+		return tcpConn.CloseWrite()
+	}
+	return fmt.Errorf("underlying connection does not support CloseWrite")
 }
