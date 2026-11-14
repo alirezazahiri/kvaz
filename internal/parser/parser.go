@@ -7,7 +7,8 @@ import (
 	"kvaz/internal/tokenizer"
 )
 
-type Parser struct{}
+type Parser struct {
+}
 
 func New() *Parser {
 	return &Parser{}
@@ -16,6 +17,7 @@ func New() *Parser {
 func (p *Parser) Parse(tt tokenizer.TokenType, rest string) (command.Command, error) {
 	args := tokenizer.Tokenize(rest)
 	n := len(args)
+
 	switch tt {
 	case tokenizer.PING:
 		if n > 0 {

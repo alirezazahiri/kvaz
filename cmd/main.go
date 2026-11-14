@@ -5,19 +5,29 @@ import (
 	"kvaz/internal/command"
 	"kvaz/internal/handler"
 	"kvaz/internal/parser"
+	"kvaz/internal/processor"
+	"kvaz/internal/storage"
 	"kvaz/internal/tcp"
 	"kvaz/internal/tokenizer"
 )
 
+const PoolSize = 10
+
 func main() {
 	ts := tcp.NewTCPServer(6379)
 	defer ts.Close()
-	cmd := make(chan command.Command, 10)
+
+	storage := storage.NewInMemoryStorage()
+	processor := processor.New(storage)
+
+	t := tokenizer.New()
+	p := parser.New()
+
+	cmd := make(chan command.Command, PoolSize)
+
 	go func() {
 		for {
-			task := <-cmd
-			fmt.Printf("executing task: %#v\n", task)
-			task.Execute()
+			processor.Process(<-cmd)
 		}
 	}()
 
@@ -26,10 +36,8 @@ func main() {
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-
 		ch := handler.NewConnectionHandler(tc)
-		t := tokenizer.New()
-		p := parser.New()
+
 		go ch.Connect(func(b []byte) {
 			v, err := p.Parse(t.SplitFirstToken(b))
 			if err != nil {

@@ -1,6 +1,9 @@
 package command
 
-import "fmt"
+import (
+	"fmt"
+	"kvaz/internal/storage"
+)
 
 type SetCommand struct {
 	Key   string
@@ -14,6 +17,11 @@ func NewSetCommand(k string, v string) SetCommand {
 	}
 }
 func (c SetCommand) cmd() {}
-func (c SetCommand) Execute() {
-	fmt.Println("SetCommand")
+func (c SetCommand) Execute(storage storage.StorageEngine) {
+	ok := storage.Set(c.Key, c.Value)
+	if ok {
+		fmt.Println("OK")
+		return
+	}
+	fmt.Println("ERROR")
 }
