@@ -33,7 +33,14 @@ func main() {
 			if err != nil {
 				return []byte(err.Error() + "\n")
 			}
-			return []byte(processor.Process(cmd) + "\n")
+			res := processor.Process(cmd)
+			if res.Error != nil {
+				return []byte(res.Error.Error() + "\n")
+			}
+			if res.Value != nil {
+				return fmt.Appendf([]byte{}, "value: %v, status: %s\n", res.Value, res.Status)
+			}
+			return fmt.Appendf([]byte{}, "status: %s\n", res.Status)
 		})
 	}
 }
