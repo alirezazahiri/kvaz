@@ -20,7 +20,7 @@ func NewConnectionHandler(tc *tcp.TCPConnection) *ConnectionHandler {
 func (ch *ConnectionHandler) Connect(handler HandlerFn) {
 	defer ch.tc.Close()
 	for {
-		if _, err := ch.tc.Write([]byte("> ")); err != nil {
+		if _, err := ch.tc.Write([]byte("\n> ")); err != nil {
 			return
 		}
 

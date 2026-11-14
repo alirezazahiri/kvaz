@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"kvaz/internal/command"
 	"kvaz/internal/tokenizer"
+	"strconv"
 )
 
 type Parser struct {
@@ -45,10 +46,14 @@ func (p *Parser) Parse(tt tokenizer.TokenType, rest string) (command.Command, er
 		}
 		return p.exists(args[0])
 	case tokenizer.EXPIRE:
-		if n > 1 {
-			return nil, p.errorAt("EXPIRE", 1, n)
+		if n != 2 {
+			return nil, p.errorAt("EXPIRE", 2, n)
 		}
-		return p.expire(args[0])
+		secs, err := strconv.ParseInt(args[1], 10, 64)
+		if err != nil {
+			return nil, p.errorAt("EXPIRE")
+		}
+		return p.expire(args[0], secs)
 	case tokenizer.TTL:
 		if n > 1 {
 			return nil, p.errorAt("TTL", 1, n)

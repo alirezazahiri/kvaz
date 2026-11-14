@@ -15,4 +15,12 @@ type StorageEngine interface {
 	Delete(k string) bool
 	// Exists returns `true` if a key exists, and `false` if not
 	Exists(k string) bool
+	// Expire returns `true` if a key is successfully expired, otherwise if the key does not exist
+	// it returns `false`
+	Expire(k string, secs int64) bool
+	// Ttl returns:
+	// `-2`: if the key is missing
+	// `-1`: if the key has no expiry
+	// any non-negative integer: the actual key's TTL
+	TTL(k string) (int64, RecordState)
 }

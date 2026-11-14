@@ -1,40 +1,34 @@
 // Package dto: this one is responsible for the construction of data-transfer-object
 package dto
 
+type Kind uint8
+
+const (
+	KindSimpleString Kind = 1
+	KindBulkString   Kind = 2
+	KindInteger      Kind = 3
+	KindNull         Kind = 4
+	KindError        Kind = 5
+)
+
 type Response struct {
-	Status Status
-	Value  any
-	Error  error
+	Kind    Kind
+	Text    string
+	Integer int64
 }
 
-func EmptySuccessResponse() Response {
-	return Response{
-		Status: StatusOk,
-		Value:  nil,
-		Error:  nil,
-	}
+func SimpleString(s string) Response {
+	return Response{Kind: KindSimpleString, Text: s}
 }
-
-func SuccessResponse(v any) Response {
-	return Response{
-		Status: StatusOk,
-		Value:  v,
-		Error:  nil,
-	}
+func BulkString(s string) Response {
+	return Response{Kind: KindBulkString, Text: s}
 }
-
-func NotFoundResponse() Response {
-	return Response{
-		Status: StatusNotFound,
-		Value:  nil,
-		Error:  nil,
-	}
+func Integer(i int64) Response {
+	return Response{Kind: KindInteger, Integer: i}
 }
-
-func ErrorResponse(err error) Response {
-	return Response{
-		Status: StatusError,
-		Value:  nil,
-		Error:  err,
-	}
+func Null() Response {
+	return Response{Kind: KindNull}
+}
+func Error(m string) Response {
+	return Response{Kind: KindError, Text: m}
 }

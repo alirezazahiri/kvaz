@@ -22,8 +22,8 @@ func (p *Parser) exists(k string) (command.ExistsCommand, error) {
 	return command.NewExistsCommand(k), nil
 }
 
-func (p *Parser) expire(k string) (command.ExpireCommand, error) {
-	return command.NewExpireCommand(k), nil
+func (p *Parser) expire(k string, secs int64) (command.ExpireCommand, error) {
+	return command.NewExpireCommand(k, secs), nil
 }
 
 func (p *Parser) ttl(k string) (command.TTLCommand, error) {

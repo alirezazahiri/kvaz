@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"kvaz/internal/dto"
 	"kvaz/internal/handler"
 	"kvaz/internal/parser"
 	"kvaz/internal/processor"
@@ -31,16 +32,21 @@ func main() {
 		go ch.Connect(func(b []byte) []byte {
 			cmd, err := p.Parse(t.SplitFirstToken(b))
 			if err != nil {
-				return []byte(err.Error() + "\n")
+				return []byte(err.Error())
 			}
 			res := processor.Process(cmd)
-			if res.Error != nil {
-				return []byte(res.Error.Error() + "\n")
+			switch res.Kind {
+			case dto.KindSimpleString, dto.KindBulkString:
+				return []byte(res.Text)
+			case dto.KindInteger:
+				return fmt.Appendf([]byte{}, "%d", res.Integer)
+			case dto.KindNull:
+				return []byte("NULL")
+			case dto.KindError:
+				return []byte(res.Text)
+			default:
+				return []byte("NOOP")
 			}
-			if res.Value != nil {
-				return fmt.Appendf([]byte{}, "value: %v, status: %s\n", res.Value, res.Status)
-			}
-			return fmt.Appendf([]byte{}, "status: %s\n", res.Status)
 		})
 	}
 }

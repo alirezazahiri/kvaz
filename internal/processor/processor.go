@@ -22,39 +22,51 @@ func (p *Processor) Process(cmd command.Command) dto.Response {
 	fmt.Printf("executing task: %T\n", cmd)
 	switch cmd := cmd.(type) {
 	case command.PingCommand:
-		return dto.EmptySuccessResponse()
+		return dto.SimpleString("PONG")
 	case command.SetCommand:
 		ok := p.storage.Set(cmd.Key, cmd.Value)
 		if ok {
-			return dto.EmptySuccessResponse()
+			return dto.SimpleString("OK")
 		}
-		return dto.ErrorResponse(fmt.Errorf("failed to set value for key '%s'", cmd.Key))
+		return dto.Error(fmt.Sprintf("failed to set value for key '%s'", cmd.Key))
 	case command.GetCommand:
 		value, err := p.storage.Get(cmd.Key)
 		if err != nil {
-			return dto.ErrorResponse(err)
+			return dto.Null()
 		}
-		return dto.SuccessResponse(value)
+		return dto.BulkString(value)
 	case command.DelCommand:
 		ok := p.storage.Delete(cmd.Key)
 		if ok {
-			return dto.EmptySuccessResponse()
+			return dto.Integer(1)
 		}
-		return dto.ErrorResponse(fmt.Errorf("failed to delete key '%s'", cmd.Key))
+		return dto.Integer(0)
 	case command.ExistsCommand:
 		ok := p.storage.Exists(cmd.Key)
 		if ok {
-			return dto.EmptySuccessResponse()
+			return dto.Integer(1)
 		}
-		return dto.NotFoundResponse()
-	// case command.ExpireCommand:
-	// case command.TTLCommand:
+		return dto.Integer(0)
+	case command.TTLCommand:
+		secs, state := p.storage.TTL(cmd.Key)
+		switch state {
+		case storage.RecordStatePersistent:
+			return dto.Integer(-1)
+		case storage.RecordStateMissing:
+			return dto.Integer(-2)
+		case storage.RecordStateExpiring:
+			return dto.Integer(secs)
+		default:
+			// This obviously doesn't happen, but in case we add some new state I didn't treat the remaining case as default
+			return dto.Null()
+		}
+	case command.ExpireCommand:
+		ok := p.storage.Expire(cmd.Key, cmd.Seconds)
+		if ok {
+			return dto.Integer(1)
+		}
+		return dto.Integer(0)
 	default:
-		todo()
-		return dto.Response{}
+		return dto.Error("unknown command")
 	}
-}
-
-func todo() {
-	fmt.Println("not implemented yet!")
 }
