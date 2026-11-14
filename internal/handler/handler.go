@@ -8,7 +8,7 @@ import (
 	"kvaz/internal/tcp"
 )
 
-type OnReadFn func([]byte)
+type HandlerFn func([]byte) []byte
 type ConnectionHandler struct {
 	tc *tcp.TCPConnection
 }
@@ -17,7 +17,7 @@ func NewConnectionHandler(tc *tcp.TCPConnection) *ConnectionHandler {
 	return &ConnectionHandler{tc: tc}
 }
 
-func (ch *ConnectionHandler) Connect(onRead OnReadFn) {
+func (ch *ConnectionHandler) Connect(handler HandlerFn) {
 	defer ch.tc.Close()
 	for {
 		if _, err := ch.tc.Write([]byte("> ")); err != nil {
@@ -44,9 +44,9 @@ func (ch *ConnectionHandler) Connect(onRead OnReadFn) {
 			return
 		}
 
-		onRead(bytes)
+		response := handler(bytes)
 
-		if _, err := ch.tc.Write(append([]byte("You said: "), bytes...)); err != nil {
+		if _, err := ch.tc.Write(response); err != nil {
 			fmt.Println("error occured while writing data")
 			return
 		}

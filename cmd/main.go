@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"kvaz/internal/command"
 	"kvaz/internal/handler"
 	"kvaz/internal/parser"
 	"kvaz/internal/processor"
@@ -23,28 +22,20 @@ func main() {
 	t := tokenizer.New()
 	p := parser.New()
 
-	cmd := make(chan command.Command, PoolSize)
-
-	go func() {
-		for {
-			processor.Process(<-cmd)
-		}
-	}()
-
 	for {
 		tc, err := ts.Accept()
 		if err != nil {
 			fmt.Println(err.Error())
+			continue
 		}
 		ch := handler.NewConnectionHandler(tc)
 
-		go ch.Connect(func(b []byte) {
-			v, err := p.Parse(t.SplitFirstToken(b))
+		go ch.Connect(func(b []byte) []byte {
+			cmd, err := p.Parse(t.SplitFirstToken(b))
 			if err != nil {
-				fmt.Println(err.Error())
-				return
+				return []byte(err.Error() + "\n")
 			}
-			cmd <- v
+			return []byte(processor.Process(cmd) + "\n")
 		})
 	}
 }
