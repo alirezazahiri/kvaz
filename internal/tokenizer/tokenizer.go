@@ -12,7 +12,7 @@ func New() *Tokenizer {
 	return &Tokenizer{}
 }
 
-func (p *Tokenizer) SplitFirstToken(b []byte) (TokenType, string) {
+func (t *Tokenizer) SplitFirstToken(b []byte) (TokenType, string) {
 	sb := strings.Builder{}
 	clean := strings.TrimSpace(string(b))
 
@@ -33,4 +33,8 @@ func (p *Tokenizer) SplitFirstToken(b []byte) (TokenType, string) {
 	}
 
 	return tt, result
+}
+
+func Tokenize(s string) []string {
+	return strings.Split(s, " ")
 }
