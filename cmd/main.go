@@ -10,8 +10,6 @@ import (
 	"kvaz/internal/tokenizer"
 )
 
-const PoolSize = 10
-
 func main() {
 	ts := tcp.NewTCPServer(6379)
 	defer ts.Close()

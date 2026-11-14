@@ -1,18 +1,25 @@
 package storage
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 type InMemoryStorage struct {
 	cache map[string]string
+	mu    sync.RWMutex
 }
 
 func NewInMemoryStorage() *InMemoryStorage {
 	return &InMemoryStorage{
+		mu:    sync.RWMutex{},
 		cache: make(map[string]string),
 	}
 }
 
 func (ims *InMemoryStorage) Get(k string) (string, error) {
+	ims.mu.RLock()
+	defer ims.mu.RUnlock()
 	if v, ok := ims.cache[k]; ok {
 		return v, nil
 	}
@@ -20,9 +27,8 @@ func (ims *InMemoryStorage) Get(k string) (string, error) {
 }
 
 func (ims *InMemoryStorage) Set(k, v string) bool {
-	if _, ok := ims.cache[k]; !ok {
-		ims.cache[k] = v
-		return true
-	}
-	return false
+	ims.mu.Lock()
+	defer ims.mu.Unlock()
+	ims.cache[k] = v
+	return true
 }
