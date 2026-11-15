@@ -18,9 +18,9 @@ type StorageEngine interface {
 	// Expire returns `true` if a key is successfully expired, otherwise if the key does not exist
 	// it returns `false`
 	Expire(k string, secs int64) bool
-	// Ttl returns:
-	// `-2`: if the key is missing
-	// `-1`: if the key has no expiry
-	// any non-negative integer: the actual key's TTL
+	// TTL returns:
+	// `RecordStateMissing`: if the key is missing
+	// `RecordStatePersistent`: if the key has no expiry
+	// `RecordStateExpiring` + non-negative integer: if the key has an expiry
 	TTL(k string) (int64, RecordState)
 }
