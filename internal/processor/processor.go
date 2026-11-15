@@ -30,8 +30,8 @@ func (p *Processor) Process(cmd command.Command) dto.Response {
 		}
 		return dto.Error(fmt.Sprintf("failed to set value for key '%s'", cmd.Key))
 	case command.GetCommand:
-		value, err := p.storage.Get(cmd.Key)
-		if err != nil {
+		value, ok := p.storage.Get(cmd.Key)
+		if !ok {
 			return dto.Null()
 		}
 		return dto.BulkString(value)
@@ -57,7 +57,7 @@ func (p *Processor) Process(cmd command.Command) dto.Response {
 		case storage.RecordStateExpiring:
 			return dto.Integer(secs)
 		default:
-			// This obviously doesn't happen, but in case we add some new state I didn't treat the remaining case as default
+			// INFO: This obviously doesn't happen, but in case we add some new state I didn't treat the remaining case as default
 			return dto.Null()
 		}
 	case command.ExpireCommand:

@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"sync"
 	"time"
 )
@@ -22,13 +21,16 @@ func NewInMemoryStorage() *InMemoryStorage {
 	}
 }
 
-func (ims *InMemoryStorage) Get(k string) (string, error) {
+func (ims *InMemoryStorage) Get(k string) (string, bool) {
+	if _, state := ims.TTL(k); state == RecordStateMissing {
+		return "", false
+	}
 	ims.mu.RLock()
 	defer ims.mu.RUnlock()
 	if v, ok := ims.cache[k]; ok {
-		return v.Value, nil
+		return v.Value, true
 	}
-	return "", fmt.Errorf("key '%s' not found", k)
+	return "", false
 }
 
 func (ims *InMemoryStorage) Set(k, v string) bool {
@@ -39,16 +41,22 @@ func (ims *InMemoryStorage) Set(k, v string) bool {
 }
 
 func (ims *InMemoryStorage) Delete(k string) bool {
+	if _, state := ims.TTL(k); state == RecordStateMissing {
+		return false
+	}
 	ims.mu.Lock()
 	defer ims.mu.Unlock()
 	if _, ok := ims.cache[k]; ok {
-		delete(ims.cache, k)
+		ims.invalidateKey(k)
 		return ok
 	}
 	return false
 }
 
 func (ims *InMemoryStorage) Exists(k string) bool {
+	if _, state := ims.TTL(k); state == RecordStateMissing {
+		return false
+	}
 	ims.mu.RLock()
 	defer ims.mu.RUnlock()
 	_, ok := ims.cache[k]
@@ -56,12 +64,16 @@ func (ims *InMemoryStorage) Exists(k string) bool {
 }
 
 func (ims *InMemoryStorage) Expire(k string, secs int64) bool {
+	if _, state := ims.TTL(k); state == RecordStateMissing {
+		return false
+	}
 	ims.mu.Lock()
 	defer ims.mu.Unlock()
 	if v, ok := ims.cache[k]; ok {
+		ddline := time.Now().Add(time.Duration(secs * int64(time.Second)))
 		ims.cache[k] = Record{
 			Value:    v.Value,
-			Deadline: time.Now().Add(time.Duration(secs * int64(time.Second))),
+			Deadline: ddline,
 		}
 		return true
 	}
@@ -69,8 +81,24 @@ func (ims *InMemoryStorage) Expire(k string, secs int64) bool {
 }
 
 func (ims *InMemoryStorage) TTL(k string) (int64, RecordState) {
-	ims.mu.RLock()
-	defer ims.mu.RUnlock()
-	// TODO: implement me!
-	return 0, RecordStatePersistent
+	ims.mu.Lock()
+	defer ims.mu.Unlock()
+	v, ok := ims.cache[k]
+	if !ok {
+		return 0, RecordStateMissing
+	}
+	if v.Deadline.IsZero() {
+		return 0, RecordStatePersistent
+	}
+	remainingSeconds := time.Until(v.Deadline).Seconds()
+	if remainingSeconds <= 0 {
+		ims.invalidateKey(k)
+		return 0, RecordStateMissing
+	}
+	return int64(remainingSeconds), RecordStateExpiring
+}
+
+// this one assumes that the caller function already acquires the lock and that the key already exists
+func (ims *InMemoryStorage) invalidateKey(k string) {
+	delete(ims.cache, k)
 }

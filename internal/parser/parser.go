@@ -52,6 +52,8 @@ func (p *Parser) Parse(tt tokenizer.TokenType, rest string) (command.Command, er
 		secs, err := strconv.ParseInt(args[1], 10, 64)
 		if err != nil {
 			return nil, p.errorAt("EXPIRE")
+		} else if secs < 0 {
+			return nil, fmt.Errorf("expected non-negative numbers, received: %d", secs)
 		}
 		return p.expire(args[0], secs)
 	case tokenizer.TTL:

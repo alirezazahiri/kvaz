@@ -36,14 +36,16 @@ func main() {
 			}
 			res := processor.Process(cmd)
 			switch res.Kind {
-			case dto.KindSimpleString, dto.KindBulkString:
+			case dto.KindSimpleString:
 				return []byte(res.Text)
+			case dto.KindBulkString:
+				return []byte("\"" + res.Text + "\"")
 			case dto.KindInteger:
-				return fmt.Appendf([]byte{}, "%d", res.Integer)
+				return fmt.Appendf([]byte{}, "(integer) %d", res.Integer)
 			case dto.KindNull:
-				return []byte("NULL")
+				return []byte("(nil)")
 			case dto.KindError:
-				return []byte(res.Text)
+				return []byte("\"" + res.Text + "\"")
 			default:
 				return []byte("NOOP")
 			}
