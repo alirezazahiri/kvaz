@@ -17,14 +17,14 @@ func NewConnectionHandler(tc *tcp.TCPConnection) *ConnectionHandler {
 	return &ConnectionHandler{tc: tc}
 }
 
-func (ch *ConnectionHandler) Connect(handler HandlerFn) {
+func (ch *ConnectionHandler) Connect(handler HandlerFn, options ...int) {
+	bufsize := 1024
 	defer ch.tc.Close()
+	if len(options) > 0 {
+		bufsize = options[0]
+	}
 	for {
-		if _, err := ch.tc.Write([]byte("\n> ")); err != nil {
-			return
-		}
-
-		d := make([]byte, 1024)
+		d := make([]byte, bufsize)
 		n, err := ch.tc.Read(d)
 
 		if err != nil {

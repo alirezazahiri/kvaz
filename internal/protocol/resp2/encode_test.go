@@ -31,7 +31,7 @@ func TestEncode_MatchesDecoderRoundTrip(t *testing.T) {
 
 	for _, tt := range inputs {
 		t.Run(tt.wire, func(t *testing.T) {
-			got, err := resp2.Encode(tt.val)
+			got, err := resp2.New().Encode(tt.val)
 			if err != nil {
 				t.Fatalf("encode: %v", err)
 			}

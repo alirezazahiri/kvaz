@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"kvaz/internal/dto"
 	"kvaz/internal/handler"
-	"kvaz/internal/parser"
+	legacyparser "kvaz/internal/parser/legacy"
 	"kvaz/internal/processor"
 	"kvaz/internal/storage"
 	"kvaz/internal/tcp"
@@ -19,7 +19,7 @@ func main() {
 	processor := processor.New(storage)
 
 	t := tokenizer.New()
-	p := parser.New()
+	p := legacyparser.New()
 
 	for {
 		tc, err := ts.Accept()

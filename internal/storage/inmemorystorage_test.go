@@ -234,35 +234,38 @@ func TestGetAfterNaturalExpiry(t *testing.T) {
 	}
 }
 
-func TestConcurrentAccess(t *testing.T) {
+func TestConcurrentWrites(t *testing.T) {
 	store := prepareStorage()
-	testfail := make(chan string)
 
 	var wg sync.WaitGroup
+
 	for i := range 100 {
 		wg.Add(1)
-		select {
-		case msg := <-testfail:
-			t.Fatal(msg)
-		default:
-			break
-		}
+
 		go func(i int) {
 			defer wg.Done()
-			key := "shared"
+
+			key := fmt.Sprintf("key%d", i)
 			value := fmt.Sprintf("value%d", i)
+
 			store.Set(key, value)
-			v, _ := store.Get(key)
-			if v != value {
-				testfail <- fmt.Sprintf("expected value to be %s, but got %s", value, v)
-			}
 		}(i)
 	}
+
 	wg.Wait()
 
-	_, ok := store.Get("shared")
-	if !ok {
-		t.Fatal("expected shared key to exist after concurrent writes")
+	for i := range 100 {
+		key := fmt.Sprintf("key%d", i)
+		expected := fmt.Sprintf("value%d", i)
+
+		actual, ok := store.Get(key)
+		if !ok {
+			t.Fatalf("expected key %s to exist", key)
+		}
+
+		if actual != expected {
+			t.Errorf("expected %s, got %s", expected, actual)
+		}
 	}
 }
 

@@ -10,17 +10,17 @@ import (
 	"kvaz/internal/protocol/resp2"
 )
 
-type RESP2Parser struct{}
+type Parser struct{}
 
-func New() *RESP2Parser {
-	return &RESP2Parser{}
+func New() *Parser {
+	return &Parser{}
 }
 
 // Parse converts a RESP2 value into one or more commands.
 //
 // flat array -> one command.
 // array of arrays -> a batch of commands.
-func (p *RESP2Parser) Parse(value resp2.Value) ([]command.Command, error) {
+func (p *Parser) Parse(value resp2.Value) ([]command.Command, error) {
 	if value.Kind != resp2.KindArray {
 		return nil, ParseErrorExpectedArray.format(value.Kind)
 	}
@@ -43,7 +43,7 @@ func (p *RESP2Parser) Parse(value resp2.Value) ([]command.Command, error) {
 	return []command.Command{cmd}, nil
 }
 
-func (p *RESP2Parser) parseBatch(value resp2.Value) ([]command.Command, error) {
+func (p *Parser) parseBatch(value resp2.Value) ([]command.Command, error) {
 	commands := make([]command.Command, 0, len(value.Elements))
 
 	for i, element := range value.Elements {
@@ -62,7 +62,7 @@ func (p *RESP2Parser) parseBatch(value resp2.Value) ([]command.Command, error) {
 	return commands, nil
 }
 
-func (p *RESP2Parser) parseCommand(value resp2.Value) (command.Command, error) {
+func (p *Parser) parseCommand(value resp2.Value) (command.Command, error) {
 	if value.Kind != resp2.KindArray {
 		return nil, ParseErrorExpectedCommandArray
 	}
