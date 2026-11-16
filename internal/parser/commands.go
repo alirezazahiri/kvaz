@@ -2,30 +2,30 @@ package parser
 
 import "kvaz/internal/command"
 
-func (p *Parser) ping() (command.PingCommand, error) {
+func Ping() (command.PingCommand, error) {
 	return command.NewPingCommand(), nil
 }
 
-func (p *Parser) get(k string) (command.GetCommand, error) {
+func Get(k string) (command.GetCommand, error) {
 	return command.NewGetCommand(k), nil
 }
 
-func (p *Parser) set(k, v string) (command.SetCommand, error) {
+func Set(k, v string) (command.SetCommand, error) {
 	return command.NewSetCommand(k, v), nil
 }
 
-func (p *Parser) del(k string) (command.DelCommand, error) {
+func Del(k string) (command.DelCommand, error) {
 	return command.NewDelCommand(k), nil
 }
 
-func (p *Parser) exists(k string) (command.ExistsCommand, error) {
+func Exists(k string) (command.ExistsCommand, error) {
 	return command.NewExistsCommand(k), nil
 }
 
-func (p *Parser) expire(k string, secs int64) (command.ExpireCommand, error) {
+func Expire(k string, secs int64) (command.ExpireCommand, error) {
 	return command.NewExpireCommand(k, secs), nil
 }
 
-func (p *Parser) ttl(k string) (command.TTLCommand, error) {
+func TTL(k string) (command.TTLCommand, error) {
 	return command.NewTTLCommand(k), nil
 }

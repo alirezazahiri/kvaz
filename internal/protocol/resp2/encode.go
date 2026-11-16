@@ -4,8 +4,8 @@ import "strconv"
 
 var crlf = []byte("\r\n")
 
-func Encode(v Value) ([]byte, error) {
-	return New().encode(v)
+func (p *Protocol) Encode(v Value) ([]byte, error) {
+	return p.encode(v)
 }
 
 func (p *Protocol) encode(v Value) ([]byte, error) {

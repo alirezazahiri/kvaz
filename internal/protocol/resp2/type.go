@@ -35,5 +35,5 @@ func Error(m string) Value {
 	return Value{Kind: KindError, Text: m}
 }
 func Array(v []Value) Value {
-	return Value{Kind: KindArray, Elements: v}
+	return Value{Kind: KindArray, Elements: v, Integer: int64(len(v))}
 }
